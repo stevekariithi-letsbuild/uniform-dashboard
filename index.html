@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Uniform Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b1a10;
+      --surface: #112016;
+      --surface2: #192e1e;
+      --border: #243d2a;
+      --green: #4a9c2a;
+      --green-light: #5cb832;
+      --green-dim: #1e3d18;
+      --text: #e4ede6;
+      --text-dim: #6b906f;
+      --text-muted: #3d5e42;
+      --accent: #9ed46a;
+      --amber: #e8a020;
+      --red: #d04030;
+      --blue: #4080c0;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── LAYOUT ── */
+    .app { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+
+    /* ── HEADER ── */
+    .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+    .header-left h1 { font-family: 'DM Mono', monospace; font-size: 22px; color: var(--accent); }
+    .header-left p { font-size: 13px; color: var(--text-dim); margin-top: 3px; }
+    .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .refresh-btn { padding: 8px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif; }
+    .refresh-btn:hover { border-color: var(--green); }
+    .last-updated { font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+
+    /* ── TOP STATS ── */
+    .top-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+    @media (max-width: 600px) { .top-stats { grid-template-columns: repeat(2, 1fr); } }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+    .stat-num { font-size: 28px; font-weight: 600; color: var(--accent); font-family: 'DM Mono', monospace; }
+    .stat-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    /* ── SECTION TITLE ── */
+    .section-title { font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); margin-bottom: 12px; font-family: 'DM Mono', monospace; }
+
+    /* ── SCHOOL GRID ── */
+    .school-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; margin-bottom: 32px; }
+    @media (max-width: 480px) { .school-grid { grid-template-columns: 1fr; } }
+
+    .school-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: pointer; transition: border-color 0.15s; }
+    .school-card:hover { border-color: var(--green); }
+    .school-card.active { border-color: var(--green); }
+
+    .school-card-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); }
+    .school-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .school-leader { font-size: 12px; color: var(--text-dim); font-family: 'DM Mono', monospace; }
+
+    .school-card-body { padding: 12px 16px; }
+    .school-stats-row { display: flex; gap: 16px; margin-bottom: 10px; }
+    .school-stat { flex: 1; }
+    .school-stat-num { font-size: 20px; font-weight: 600; font-family: 'DM Mono', monospace; }
+    .school-stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.03em; }
+    .boys-num { color: var(--blue); }
+    .girls-num { color: #d080b0; }
+    .total-num { color: var(--accent); }
+
+    .progress-wrap { margin-top: 6px; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-bottom: 4px; font-family: 'DM Mono', monospace; }
+    .progress-bar { height: 5px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 4px; background: var(--green); transition: width 0.4s; }
+
+    .school-card-footer { padding: 8px 16px; background: var(--surface2); display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-dim); }
+    .dist-date { font-family: 'DM Mono', monospace; }
+    .view-detail { color: var(--green); font-size: 12px; }
+
+    /* ── DETAIL PANEL ── */
+    .detail-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 32px; overflow: hidden; }
+    .detail-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .detail-title { font-size: 16px; font-weight: 600; }
+    .detail-meta { font-size: 12px; color: var(--text-dim); font-family: 'DM Mono', monospace; margin-top: 2px; }
+    .close-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim); padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif; }
+
+    /* ── FILTERS ── */
+    .filters { padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .filter-input { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 12px; color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; }
+    .filter-input:focus { border-color: var(--green); }
+    .filter-select { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 12px; color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+    th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); border-bottom: 1px solid var(--border); background: var(--surface2); white-space: nowrap; }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface2); }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+    .b-boy { background: #1a3060; color: #80b8f0; }
+    .b-girl { background: #3d1840; color: #d080b0; }
+    .b-small { background: var(--green-dim); color: var(--accent); }
+    .b-nr { background: #2a2010; color: var(--amber); }
+
+    .empty-state { padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px; }
+
+    /* ── GENDER BREAKDOWN ── */
+    .breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+    @media (max-width: 480px) { .breakdown-grid { grid-template-columns: 1fr; } }
+    .breakdown-card { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px; }
+    .breakdown-title { font-size: 12px; color: var(--text-dim); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+    .breakdown-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+    .breakdown-row:last-child { border-bottom: none; }
+    .breakdown-key { color: var(--text-dim); }
+    .breakdown-val { font-weight: 500; font-family: 'DM Mono', monospace; }
+
+    /* ── LOADING ── */
+    .loading { padding: 60px; text-align: center; color: var(--text-dim); }
+    .spinner { display: inline-block; width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── GENDER SUMMARY BAR ── */
+    .gender-bar { display: flex; gap: 4px; height: 4px; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+    .gender-bar-boys { background: var(--blue); transition: width 0.4s; }
+    .gender-bar-girls { background: #d080b0; flex: 1; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>👕 Uniform Dashboard</h1>
+      <p>Live data from Airtable · 6 schools · Kenya</p>
+    </div>
+    <div class="header-right">
+      <span class="last-updated" id="last-updated"></span>
+      <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+    </div>
+  </div>
+
+  <!-- TOP STATS -->
+  <div class="top-stats" id="top-stats">
+    <div class="stat-card"><div class="spinner"></div></div>
+  </div>
+
+  <!-- SCHOOL OVERVIEW -->
+  <div class="section-title">Schools overview</div>
+  <div class="school-grid" id="school-grid"></div>
+
+  <!-- DETAIL PANEL -->
+  <div id="detail-panel"></div>
+
+</div>
+
+<script>
+const AIRTABLE_API_KEY = 'pat3b9jrp15AlPFWz.b7d51d6c388d9f6ebe5a0495085dbb1c9d64e577ca560a011a1fbf1a3026aba7';
+const AIRTABLE_BASE_ID = 'app3VirHr5wWXuJMB';
+const AIRTABLE_TABLE   = 'Dispatches';
+
+const SCHOOLS = [
+  { id:'etham',    name:'Etham Blessed Kids Centre',      leader:'Fridah',              allocated:211, distDate:'24 May 2026' },
+  { id:'peace',    name:"Peace Children's Centre",        leader:'Mary Nduku Wambua',   allocated:380, distDate:'22 May 2026' },
+  { id:'janjewa',  name:'Janjewa Education Centre',       leader:'Philip Kiarie',       allocated:195, distDate:'TBC' },
+  { id:'dachi',    name:'Dachi Education Centre',         leader:'Daniel Mahegere',     allocated:282, distDate:'TBC' },
+  { id:'madoma',   name:'Madoma Korando Faith Centre',    leader:'John Nyasiyo',        allocated:306, distDate:'TBC' },
+  { id:'damakims', name:'Damakims Community School',      leader:'Damaris Ndunge',      allocated:363, distDate:'TBC' },
+];
+
+let allRecords = [];
+let activeSchool = null;
+
+async function loadData() {
+  document.getElementById('top-stats').innerHTML = '<div class="stat-card loading"><div class="spinner"></div></div>';
+  document.getElementById('school-grid').innerHTML = '<div class="loading"><div class="spinner"></div><div>Loading live data…</div></div>';
+
+  try {
+    let records = [];
+    let offset = null;
+    do {
+      const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE)}?pageSize=100${offset ? '&offset=' + offset : ''}`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+      records = records.concat(data.records);
+      offset = data.offset;
+    } while (offset);
+
+    allRecords = records;
+    document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    renderAll();
+  } catch(e) {
+    document.getElementById('school-grid').innerHTML = `<div class="loading" style="color:#d04030">Error: ${e.message}<br><br><button class="refresh-btn" onclick="loadData()">Try again</button></div>`;
+  }
+}
+
+function getSchoolRecords(schoolName) {
+  return allRecords.filter(r => r.fields['School'] === schoolName);
+}
+
+function renderAll() {
+  renderTopStats();
+  renderSchoolGrid();
+  if (activeSchool) renderDetail(activeSchool);
+}
+
+function renderTopStats() {
+  const total = allRecords.length;
+  const boys = allRecords.filter(r => r.fields['Gender'] === 'Boy').length;
+  const girls = allRecords.filter(r => r.fields['Gender'] === 'Girl').length;
+  const schools = new Set(allRecords.map(r => r.fields['School'])).size;
+  document.getElementById('top-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Children logged</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--blue)">${boys}</div><div class="stat-label">Boys</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#d080b0">${girls}</div><div class="stat-label">Girls</div></div>
+    <div class="stat-card"><div class="stat-num">${schools}</div><div class="stat-label">Schools active</div></div>
+  `;
+}
+
+function renderSchoolGrid() {
+  const grid = document.getElementById('school-grid');
+  if (!SCHOOLS.length) { grid.innerHTML = '<div class="empty-state">No schools configured</div>'; return; }
+  grid.innerHTML = SCHOOLS.map(s => {
+    const recs = getSchoolRecords(s.name);
+    const boys = recs.filter(r => r.fields['Gender'] === 'Boy').length;
+    const girls = recs.filter(r => r.fields['Gender'] === 'Girl').length;
+    const total = recs.length;
+    const pct = s.allocated > 0 ? Math.min(100, Math.round(total / s.allocated * 100)) : 0;
+    const boyPct = total > 0 ? Math.round(boys / total * 100) : 50;
+    return `
+    <div class="school-card ${activeSchool===s.name?'active':''}" onclick="toggleDetail('${s.name}')">
+      <div class="school-card-header">
+        <div class="school-name">${s.name}</div>
+        <div class="school-leader">${s.leader}</div>
+      </div>
+      <div class="school-card-body">
+        <div class="school-stats-row">
+          <div class="school-stat"><div class="school-stat-num boys-num">${boys}</div><div class="school-stat-label">Boys</div></div>
+          <div class="school-stat"><div class="school-stat-num girls-num">${girls}</div><div class="school-stat-label">Girls</div></div>
+          <div class="school-stat"><div class="school-stat-num total-num">${total}</div><div class="school-stat-label">Total</div></div>
+        </div>
+        <div class="gender-bar">
+          <div class="gender-bar-boys" style="width:${boyPct}%"></div>
+          <div class="gender-bar-girls"></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Logged vs allocated</span><span>${total} / ${s.allocated} (${pct}%)</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        </div>
+      </div>
+      <div class="school-card-footer">
+        <span class="dist-date">📅 ${s.distDate}</span>
+        <span class="view-detail">${activeSchool===s.name ? '▲ Hide' : '▼ View details'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDetail(schoolName) {
+  activeSchool = activeSchool === schoolName ? null : schoolName;
+  renderSchoolGrid();
+  if (activeSchool) {
+    renderDetail(activeSchool);
+    setTimeout(() => document.getElementById('detail-panel').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  } else {
+    document.getElementById('detail-panel').innerHTML = '';
+  }
+}
+
+function renderDetail(schoolName) {
+  const school = SCHOOLS.find(s => s.name === schoolName);
+  const recs = getSchoolRecords(schoolName);
+  const boys = recs.filter(r => r.fields['Gender'] === 'Boy');
+  const girls = recs.filter(r => r.fields['Gender'] === 'Girl');
+
+  const searchVal = document.getElementById('detail-search')?.value?.toLowerCase() || '';
+  const genderFilter = document.getElementById('detail-gender')?.value || '';
+
+  let filtered = recs;
+  if (searchVal) filtered = filtered.filter(r => (r.fields['Child Name']||'').toLowerCase().includes(searchVal) || (r.fields['Logged By']||'').toLowerCase().includes(searchVal));
+  if (genderFilter) filtered = filtered.filter(r => r.fields['Gender'] === genderFilter);
+
+  // Size breakdowns
+  const shoeSizes = {};
+  recs.forEach(r => { const s = r.fields['Shoe Size']; if (s && s !== 'Not receiving') shoeSizes[s] = (shoeSizes[s]||0)+1; });
+  const sweaterSizes = {};
+  recs.forEach(r => { const s = r.fields['Sweater Size']; if (s && s !== 'Not receiving') sweaterSizes[s] = (sweaterSizes[s]||0)+1; });
+
+  document.getElementById('detail-panel').innerHTML = `
+  <div class="detail-panel">
+    <div class="detail-header">
+      <div>
+        <div class="detail-title">${schoolName}</div>
+        <div class="detail-meta">${school?.leader} · ${recs.length} children logged</div>
+      </div>
+      <button class="close-btn" onclick="toggleDetail('${schoolName}')">✕ Close</button>
+    </div>
+
+    <div class="breakdown-grid">
+      <div class="breakdown-card">
+        <div class="breakdown-title">👟 Shoe sizes</div>
+        ${Object.entries(shoeSizes).sort().map(([s,c]) => `<div class="breakdown-row"><span class="breakdown-key">${s}</span><span class="breakdown-val">${c}</span></div>`).join('') || '<div style="color:var(--text-muted);font-size:13px">No data yet</div>'}
+      </div>
+      <div class="breakdown-card">
+        <div class="breakdown-title">👕 Sweater sizes</div>
+        ${Object.entries(sweaterSizes).map(([s,c]) => `<div class="breakdown-row"><span class="breakdown-key">${s}</span><span class="breakdown-val">${c}</span></div>`).join('') || '<div style="color:var(--text-muted);font-size:13px">No data yet</div>'}
+      </div>
+    </div>
+
+    <div class="filters">
+      <input class="filter-input" id="detail-search" placeholder="Search by name or logger…" value="${searchVal}" oninput="renderDetail('${schoolName}')" style="flex:1;min-width:150px" />
+      <select class="filter-select" id="detail-gender" onchange="renderDetail('${schoolName}')">
+        <option value="">All genders</option>
+        <option value="Boy" ${genderFilter==='Boy'?'selected':''}>Boys only</option>
+        <option value="Girl" ${genderFilter==='Girl'?'selected':''}>Girls only</option>
+      </select>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Child name</th>
+            <th>Gender</th>
+            <th>Age group</th>
+            <th>Shoes</th>
+            <th>Sweater</th>
+            <th>Bag</th>
+            <th>Logged by</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered.length === 0 ? `<tr><td colspan="8" class="empty-state">No entries found</td></tr>` :
+            filtered.map(r => {
+              const f = r.fields;
+              const date = f['Timestamp'] ? new Date(f['Timestamp']).toLocaleDateString('en-GB', {day:'2-digit',month:'short'}) : '—';
+              return `<tr>
+                <td><strong>${f['Child Name']||'—'}</strong></td>
+                <td><span class="badge ${f['Gender']==='Boy'?'b-boy':'b-girl'}">${f['Gender']||'—'}</span></td>
+                <td>${f['Age Group']||'—'}</td>
+                <td><span class="badge b-small">${f['Shoe Size']||'—'}</span></td>
+                <td>${f['Sweater Size']||'—'}</td>
+                <td>${f['Bag']||'—'}</td>
+                <td style="color:var(--text-dim)">${f['Logged By']||'—'}</td>
+                <td style="color:var(--text-dim);font-family:'DM Mono',monospace;font-size:12px">${date}</td>
+              </tr>`;
+            }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+loadData();
+setInterval(loadData, 60000); // auto-refresh every 60 seconds
+</script>
+</body>
+</html>
