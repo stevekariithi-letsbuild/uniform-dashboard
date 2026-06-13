@@ -1,365 +1,366 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Uniform Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #0b1a10;
-      --surface: #112016;
-      --surface2: #192e1e;
-      --border: #243d2a;
-      --green: #4a9c2a;
-      --green-light: #5cb832;
-      --green-dim: #1e3d18;
-      --text: #e4ede6;
-      --text-dim: #6b906f;
-      --text-muted: #3d5e42;
-      --accent: #9ed46a;
-      --amber: #e8a020;
-      --red: #d04030;
-      --blue: #4080c0;
-      --radius: 12px;
-      --radius-sm: 8px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uniform Tracker — Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid #e5e5e0;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.topbar h2{font-size:16px;font-weight:600}
+.topbar p{font-size:12px;color:#888;margin-top:2px}
+.live-dot{display:inline-block;width:8px;height:8px;background:#22c55e;border-radius:50%;margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.refresh-btn{background:none;border:1px solid #e5e5e0;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}
+.add-btn{background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;margin-left:8px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px}
+.stat{background:#fff;border-radius:10px;padding:14px;text-align:center}
+.stat-num{font-size:24px;font-weight:700}
+.stat-label{font-size:11px;color:#888;margin-top:2px}
+.school-tabs{display:flex;gap:8px;padding:0 20px 12px;overflow-x:auto;scrollbar-width:none}
+.school-tabs::-webkit-scrollbar{display:none}
+.stab{background:#fff;border:1px solid #e5e5e0;border-radius:20px;padding:6px 14px;font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.stab.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.school-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;padding:0 20px 20px}
+.school-card{background:#fff;border-radius:12px;padding:16px;cursor:pointer;border:2px solid transparent;transition:border-color .15s}
+.school-card.selected{border-color:#1a1a1a}
+.school-card h3{font-size:15px;font-weight:600;margin-bottom:4px}
+.school-card .meta{font-size:12px;color:#888;margin-bottom:10px}
+.progress-bar{height:6px;background:#f0f0e8;border-radius:3px;overflow:hidden;margin-bottom:6px}
+.progress-fill{height:100%;background:#22c55e;border-radius:3px;transition:width .3s}
+.school-stats{display:flex;gap:12px;font-size:12px;color:#555}
+.detail-panel{background:#fff;margin:0 20px 20px;border-radius:12px;padding:16px}
+.detail-panel h3{font-size:16px;font-weight:600;margin-bottom:12px}
+.student-search{width:100%;padding:8px 12px;border:1px solid #e5e5e0;border-radius:8px;font-size:14px;margin-bottom:12px}
+.student-list{max-height:300px;overflow-y:auto}
+.student-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0e8;font-size:13px}
+.student-row:last-child{border-bottom:none}
+.student-row .badge{font-size:11px;padding:2px 8px;border-radius:10px;background:#f0f0e8}
+.student-row .badge.boy{background:#dbeafe;color:#1d4ed8}
+.student-row .badge.girl{background:#fce7f3;color:#9d174d}
+.log-list{margin-top:12px}
+.log-entry{font-size:13px;padding:8px 10px;border-radius:8px;background:#f8f8f4;margin-bottom:6px;display:flex;gap:8px;align-items:flex-start}
+.log-entry .dir{font-size:11px;padding:2px 8px;border-radius:10px;flex-shrink:0}
+.dir.out{background:#dcfce7;color:#166534}
+.dir.in{background:#fee2e2;color:#991b1b}
+.loading{text-align:center;padding:40px;color:#888;font-size:14px}
+.name-banner{background:#f0fdf4;border-bottom:1px solid #dcfce7;padding:8px 20px;font-size:13px;display:flex;align-items:center;gap:8px}
 
-    /* ── LAYOUT ── */
-    .app { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
-
-    /* ── HEADER ── */
-    .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
-    .header-left h1 { font-family: 'DM Mono', monospace; font-size: 22px; color: var(--accent); }
-    .header-left p { font-size: 13px; color: var(--text-dim); margin-top: 3px; }
-    .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .refresh-btn { padding: 8px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif; }
-    .refresh-btn:hover { border-color: var(--green); }
-    .last-updated { font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
-
-    /* ── TOP STATS ── */
-    .top-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
-    @media (max-width: 600px) { .top-stats { grid-template-columns: repeat(2, 1fr); } }
-    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-    .stat-num { font-size: 28px; font-weight: 600; color: var(--accent); font-family: 'DM Mono', monospace; }
-    .stat-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
-
-    /* ── SECTION TITLE ── */
-    .section-title { font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); margin-bottom: 12px; font-family: 'DM Mono', monospace; }
-
-    /* ── SCHOOL GRID ── */
-    .school-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; margin-bottom: 32px; }
-    @media (max-width: 480px) { .school-grid { grid-template-columns: 1fr; } }
-
-    .school-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: pointer; transition: border-color 0.15s; }
-    .school-card:hover { border-color: var(--green); }
-    .school-card.active { border-color: var(--green); }
-
-    .school-card-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); }
-    .school-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
-    .school-leader { font-size: 12px; color: var(--text-dim); font-family: 'DM Mono', monospace; }
-
-    .school-card-body { padding: 12px 16px; }
-    .school-stats-row { display: flex; gap: 16px; margin-bottom: 10px; }
-    .school-stat { flex: 1; }
-    .school-stat-num { font-size: 20px; font-weight: 600; font-family: 'DM Mono', monospace; }
-    .school-stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.03em; }
-    .boys-num { color: var(--blue); }
-    .girls-num { color: #d080b0; }
-    .total-num { color: var(--accent); }
-
-    .progress-wrap { margin-top: 6px; }
-    .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-bottom: 4px; font-family: 'DM Mono', monospace; }
-    .progress-bar { height: 5px; background: var(--border); border-radius: 4px; overflow: hidden; }
-    .progress-fill { height: 100%; border-radius: 4px; background: var(--green); transition: width 0.4s; }
-
-    .school-card-footer { padding: 8px 16px; background: var(--surface2); display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-dim); }
-    .dist-date { font-family: 'DM Mono', monospace; }
-    .view-detail { color: var(--green); font-size: 12px; }
-
-    /* ── DETAIL PANEL ── */
-    .detail-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 32px; overflow: hidden; }
-    .detail-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-    .detail-title { font-size: 16px; font-weight: 600; }
-    .detail-meta { font-size: 12px; color: var(--text-dim); font-family: 'DM Mono', monospace; margin-top: 2px; }
-    .close-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim); padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif; }
-
-    /* ── FILTERS ── */
-    .filters { padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    .filter-input { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 12px; color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; }
-    .filter-input:focus { border-color: var(--green); }
-    .filter-select { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 12px; color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; }
-
-    /* ── TABLE ── */
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
-    th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); border-bottom: 1px solid var(--border); background: var(--surface2); white-space: nowrap; }
-    td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: var(--surface2); }
-
-    .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
-    .b-boy { background: #1a3060; color: #80b8f0; }
-    .b-girl { background: #3d1840; color: #d080b0; }
-    .b-small { background: var(--green-dim); color: var(--accent); }
-    .b-nr { background: #2a2010; color: var(--amber); }
-
-    .empty-state { padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px; }
-
-    /* ── GENDER BREAKDOWN ── */
-    .breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
-    @media (max-width: 480px) { .breakdown-grid { grid-template-columns: 1fr; } }
-    .breakdown-card { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px; }
-    .breakdown-title { font-size: 12px; color: var(--text-dim); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
-    .breakdown-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); }
-    .breakdown-row:last-child { border-bottom: none; }
-    .breakdown-key { color: var(--text-dim); }
-    .breakdown-val { font-weight: 500; font-family: 'DM Mono', monospace; }
-
-    /* ── LOADING ── */
-    .loading { padding: 60px; text-align: center; color: var(--text-dim); }
-    .spinner { display: inline-block; width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── GENDER SUMMARY BAR ── */
-    .gender-bar { display: flex; gap: 4px; height: 4px; border-radius: 4px; overflow: hidden; margin-top: 6px; }
-    .gender-bar-boys { background: var(--blue); transition: width 0.4s; }
-    .gender-bar-girls { background: #d080b0; flex: 1; }
-  </style>
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;width:90%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:17px;font-weight:600;margin-bottom:16px}
+.modal label{display:block;font-size:13px;color:#555;margin-bottom:4px;margin-top:12px}
+.modal input,.modal select,.modal textarea{width:100%;padding:9px 12px;border:1px solid #e5e5e0;border-radius:8px;font-size:14px}
+.modal textarea{height:70px;resize:vertical}
+.modal .actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+.btn-cancel{background:none;border:1px solid #e5e5e0;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:14px}
+.btn-submit{background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:8px 20px;cursor:pointer;font-size:14px}
+.student-autocomplete{position:relative}
+.autocomplete-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e5e5e0;border-radius:8px;max-height:200px;overflow-y:auto;z-index:300;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.autocomplete-item{padding:8px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0e8}
+.autocomplete-item:hover{background:#f8f8f4}
+.autocomplete-item:last-child{border-bottom:none}
+</style>
 </head>
 <body>
-<div class="app">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="header-left">
-      <h1>👕 Uniform Dashboard</h1>
-      <p>Live data from Airtable · 6 schools · Kenya</p>
+<!-- ── CONFIG — replace these two values ── -->
+<script>
+const SHEET_ID     = '1EFjr4jxg4pr5FUp-O0p2SoEHv0jZEAMYuOQYVQtwx0s';       // from the Google Sheet URL
+const API_KEY      = 'AIzaSyBcjDdYjBjVXHTbvyRey9rR80wVQbgEoHs'; // from Google Cloud Console
+const SHEETS = {
+  SCHOOLS:    'Schools',
+  DISPATCHES: 'Dispatches',
+  STUDENTS:   'Students',
+};
+</script>
+
+<div class="topbar">
+  <div>
+    <h2><span class="live-dot"></span>Uniform distribution tracker</h2>
+    <p id="last-updated">Loading…</p>
+  </div>
+  <div>
+    <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+    <button class="add-btn" onclick="showLogModal()">+ Log dispatch</button>
+  </div>
+</div>
+<div class="name-banner" id="name-banner" style="display:none"></div>
+<div id="top-stats" class="stats"></div>
+<div id="school-tabs" class="school-tabs"></div>
+<div id="school-grid" class="school-grid"><div class="loading">Loading schools…</div></div>
+<div id="detail-panel"></div>
+
+<!-- Log modal -->
+<div class="modal-bg" id="log-modal">
+  <div class="modal">
+    <h3>Log dispatch / return</h3>
+    <label>School</label>
+    <select id="m-school"></select>
+    <label>Student name</label>
+    <div class="student-autocomplete">
+      <input type="text" id="m-student" placeholder="Type to search student…" autocomplete="off" oninput="filterStudents()">
+      <div class="autocomplete-list" id="autocomplete-list" style="display:none"></div>
     </div>
-    <div class="header-right">
-      <span class="last-updated" id="last-updated"></span>
-      <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+    <label>Item</label>
+    <select id="m-item">
+      <option>Uniform top</option>
+      <option>Uniform bottom</option>
+      <option>Shoes</option>
+      <option>Socks</option>
+      <option>Full set</option>
+    </select>
+    <label>Direction</label>
+    <select id="m-dir">
+      <option value="Out">Out — dispatching to student</option>
+      <option value="In">In — returning / collecting back</option>
+    </select>
+    <label>Size</label>
+    <input type="text" id="m-size" placeholder="e.g. 28/10, Medium, 33/1">
+    <label>Quantity</label>
+    <input type="number" id="m-qty" value="1" min="1">
+    <label>Condition</label>
+    <select id="m-cond">
+      <option>New</option>
+      <option>Good</option>
+      <option>Fair</option>
+      <option>Damaged</option>
+    </select>
+    <label>Notes (optional)</label>
+    <textarea id="m-notes" placeholder="Any additional notes…"></textarea>
+    <div class="actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-submit" onclick="submitLog()">Save entry</button>
     </div>
   </div>
-
-  <!-- TOP STATS -->
-  <div class="top-stats" id="top-stats">
-    <div class="stat-card"><div class="spinner"></div></div>
-  </div>
-
-  <!-- SCHOOL OVERVIEW -->
-  <div class="section-title">Schools overview</div>
-  <div class="school-grid" id="school-grid"></div>
-
-  <!-- DETAIL PANEL -->
-  <div id="detail-panel"></div>
-
 </div>
 
 <script>
-const AIRTABLE_API_KEY = 'pat3b9jrp15AlPFWz.b7d51d6c388d9f6ebe5a0495085dbb1c9d64e577ca560a011a1fbf1a3026aba7';
-const AIRTABLE_BASE_ID = 'app3VirHr5wWXuJMB';
-const AIRTABLE_TABLE   = 'Dispatches';
+// ── STATE ──
+let allSchools = [];
+let allDispatches = [];
+let allStudents = [];
+let activeSchool = 'all';
+let myName = localStorage.getItem('loggerName') || '';
 
-const SCHOOLS = [
-  { id:'etham',    name:'Etham Blessed Kids Centre',      leader:'Fridah',              allocated:211, distDate:'24 May 2026' },
-  { id:'peace',    name:"Peace Children's Centre",        leader:'Mary Nduku Wambua',   allocated:380, distDate:'22 May 2026' },
-  { id:'janjewa',  name:'Janjewa Education Centre',       leader:'Philip Kiarie',       allocated:195, distDate:'TBC' },
-  { id:'dachi',    name:'Dachi Education Centre',         leader:'Daniel Mahegere',     allocated:282, distDate:'TBC' },
-  { id:'madoma',   name:'Madoma Korando Faith Centre',    leader:'John Nyasiyo',        allocated:306, distDate:'TBC' },
-  { id:'damakims', name:'Damakims Community School',      leader:'Damaris Ndunge',      allocated:363, distDate:'TBC' },
-];
+// ── GOOGLE SHEETS FETCH ──
+async function fetchSheet(sheetName) {
+  const range = encodeURIComponent(sheetName);
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (!data.values || data.values.length < 2) return [];
+  const headers = data.values[0];
+  return data.values.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = row[i] || '');
+    return obj;
+  });
+}
 
-let allRecords = [];
-let activeSchool = null;
+async function appendRow(sheetName, rowData) {
+  // Requires OAuth — use a Google Apps Script Web App as proxy
+  const url = `https://script.google.com/macros/s/${GAS_DEPLOY_ID}/exec`;
+  await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify({ sheet: sheetName, row: rowData }),
+  });
+}
 
-async function loadData() {
-  document.getElementById('top-stats').innerHTML = '<div class="stat-card loading"><div class="spinner"></div></div>';
-  document.getElementById('school-grid').innerHTML = '<div class="loading"><div class="spinner"></div><div>Loading live data…</div></div>';
-
+// ── LOAD ALL DATA ──
+async function loadAll() {
   try {
-    let records = [];
-    let offset = null;
-    do {
-      const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE)}?pageSize=100${offset ? '&offset=' + offset : ''}`;
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error.message);
-      records = records.concat(data.records);
-      offset = data.offset;
-    } while (offset);
-
-    allRecords = records;
+    document.getElementById('last-updated').textContent = 'Refreshing…';
+    [allSchools, allDispatches, allStudents] = await Promise.all([
+      fetchSheet(SHEETS.SCHOOLS),
+      fetchSheet(SHEETS.DISPATCHES),
+      fetchSheet(SHEETS.STUDENTS),
+    ]);
     document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
     renderAll();
+    if (!myName) askName();
   } catch(e) {
-    document.getElementById('school-grid').innerHTML = `<div class="loading" style="color:#d04030">Error: ${e.message}<br><br><button class="refresh-btn" onclick="loadData()">Try again</button></div>`;
+    document.getElementById('school-grid').innerHTML = `<div class="loading" style="color:#d04030">Error loading data: ${e.message}<br><button onclick="loadAll()">Try again</button></div>`;
   }
 }
 
-function getSchoolRecords(schoolName) {
-  return allRecords.filter(r => r.fields['School'] === schoolName);
+function getSchoolDispatches(schoolName) {
+  return allDispatches.filter(r => r['School'] === schoolName);
 }
 
 function renderAll() {
   renderTopStats();
+  renderTabs();
   renderSchoolGrid();
-  if (activeSchool) renderDetail(activeSchool);
 }
 
 function renderTopStats() {
-  const total = allRecords.length;
-  const boys = allRecords.filter(r => r.fields['Gender'] === 'Boy').length;
-  const girls = allRecords.filter(r => r.fields['Gender'] === 'Girl').length;
-  const schools = new Set(allRecords.map(r => r.fields['School'])).size;
+  const total = allDispatches.length;
+  const dispatched = allDispatches.filter(r => r['Direction'] === 'Out').reduce((a, r) => a + (parseInt(r['Quantity']) || 0), 0);
+  const returned = allDispatches.filter(r => r['Direction'] === 'In').reduce((a, r) => a + (parseInt(r['Quantity']) || 0), 0);
   document.getElementById('top-stats').innerHTML = `
-    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Children logged</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:var(--blue)">${boys}</div><div class="stat-label">Boys</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:#d080b0">${girls}</div><div class="stat-label">Girls</div></div>
-    <div class="stat-card"><div class="stat-num">${schools}</div><div class="stat-label">Schools active</div></div>
+    <div class="stat"><div class="stat-num">${allSchools.length}</div><div class="stat-label">Schools</div></div>
+    <div class="stat"><div class="stat-num">${allStudents.length.toLocaleString()}</div><div class="stat-label">Students</div></div>
+    <div class="stat"><div class="stat-num" style="color:#166534">${dispatched - returned}</div><div class="stat-label">Items out (net)</div></div>
+    <div class="stat"><div class="stat-num" style="color:#991b1b">${returned}</div><div class="stat-label">Returned</div></div>
   `;
 }
 
+function renderTabs() {
+  const tabs = [{ id: 'all', name: 'All schools' }, ...allSchools.map(s => ({ id: s['Name'], name: s['Name'] }))];
+  document.getElementById('school-tabs').innerHTML = tabs.map(t =>
+    `<button class="stab${activeSchool === t.id ? ' active' : ''}" onclick="setTab('${t.id}')">${t.name}</button>`
+  ).join('');
+}
+
+function setTab(id) {
+  activeSchool = id;
+  renderTabs();
+  renderSchoolGrid();
+  document.getElementById('detail-panel').innerHTML = '';
+}
+
 function renderSchoolGrid() {
-  const grid = document.getElementById('school-grid');
-  if (!SCHOOLS.length) { grid.innerHTML = '<div class="empty-state">No schools configured</div>'; return; }
-  grid.innerHTML = SCHOOLS.map(s => {
-    const recs = getSchoolRecords(s.name);
-    const boys = recs.filter(r => r.fields['Gender'] === 'Boy').length;
-    const girls = recs.filter(r => r.fields['Gender'] === 'Girl').length;
-    const total = recs.length;
-    const pct = s.allocated > 0 ? Math.min(100, Math.round(total / s.allocated * 100)) : 0;
-    const boyPct = total > 0 ? Math.round(boys / total * 100) : 50;
+  const schools = activeSchool === 'all' ? allSchools : allSchools.filter(s => s['Name'] === activeSchool);
+  if (!schools.length) { document.getElementById('school-grid').innerHTML = '<div class="loading">No schools found</div>'; return; }
+  document.getElementById('school-grid').innerHTML = schools.map(s => {
+    const recs = getSchoolDispatches(s['Name']);
+    const out = recs.filter(r => r['Direction'] === 'Out').reduce((a, r) => a + (parseInt(r['Quantity']) || 0), 0);
+    const studentCount = allStudents.filter(st => st['School'] === s['Name']).length;
+    const allocated = parseInt(s['Allocated']) || studentCount || 1;
+    const pct = Math.min(100, Math.round(out / allocated * 100));
     return `
-    <div class="school-card ${activeSchool===s.name?'active':''}" onclick="toggleDetail('${s.name}')">
-      <div class="school-card-header">
-        <div class="school-name">${s.name}</div>
-        <div class="school-leader">${s.leader}</div>
-      </div>
-      <div class="school-card-body">
-        <div class="school-stats-row">
-          <div class="school-stat"><div class="school-stat-num boys-num">${boys}</div><div class="school-stat-label">Boys</div></div>
-          <div class="school-stat"><div class="school-stat-num girls-num">${girls}</div><div class="school-stat-label">Girls</div></div>
-          <div class="school-stat"><div class="school-stat-num total-num">${total}</div><div class="school-stat-label">Total</div></div>
-        </div>
-        <div class="gender-bar">
-          <div class="gender-bar-boys" style="width:${boyPct}%"></div>
-          <div class="gender-bar-girls"></div>
-        </div>
-        <div class="progress-wrap">
-          <div class="progress-label"><span>Logged vs allocated</span><span>${total} / ${s.allocated} (${pct}%)</span></div>
-          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-        </div>
-      </div>
-      <div class="school-card-footer">
-        <span class="dist-date">📅 ${s.distDate}</span>
-        <span class="view-detail">${activeSchool===s.name ? '▲ Hide' : '▼ View details'}</span>
+    <div class="school-card${activeSchool === s['Name'] ? ' selected' : ''}" onclick="showDetail('${s['Name']}')">
+      <h3>${s['Name']}</h3>
+      <div class="meta">${s['Location'] || ''} · ${studentCount} students</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="school-stats">
+        <span>${out} dispatched</span>
+        <span>${pct}% coverage</span>
+        <span>${recs.length} log entries</span>
       </div>
     </div>`;
   }).join('');
 }
 
-function toggleDetail(schoolName) {
-  activeSchool = activeSchool === schoolName ? null : schoolName;
+function showDetail(schoolName) {
+  activeSchool = schoolName;
+  renderTabs();
   renderSchoolGrid();
-  if (activeSchool) {
-    renderDetail(activeSchool);
-    setTimeout(() => document.getElementById('detail-panel').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-  } else {
-    document.getElementById('detail-panel').innerHTML = '';
+  const students = allStudents.filter(s => s['School'] === schoolName);
+  const logs = getSchoolDispatches(schoolName).slice(-20).reverse();
+  document.getElementById('detail-panel').innerHTML = `
+    <div class="detail-panel">
+      <h3>${schoolName} — Students (${students.length})</h3>
+      <input class="student-search" placeholder="Search student…" oninput="filterDetailStudents(this.value, '${schoolName}')">
+      <div class="student-list" id="student-list-detail">
+        ${renderStudentRows(students)}
+      </div>
+      <h3 style="margin-top:20px">Recent dispatches</h3>
+      <div class="log-list">
+        ${logs.length ? logs.map(l => `
+          <div class="log-entry">
+            <span class="dir ${l['Direction'] === 'Out' ? 'out' : 'in'}">${l['Direction']}</span>
+            <div>
+              <strong>${l['Student'] || l['Child Name'] || '—'}</strong> · ${l['Item'] || ''} ${l['Size'] || ''}<br>
+              <span style="color:#888;font-size:12px">${l['Logged By'] || ''} · ${l['Timestamp'] || ''}</span>
+            </div>
+          </div>`).join('') : '<div style="color:#888;font-size:13px;padding:8px 0">No dispatches logged yet</div>'}
+      </div>
+    </div>`;
+}
+
+function renderStudentRows(students) {
+  if (!students.length) return '<div style="color:#888;font-size:13px;padding:8px 0">No students found</div>';
+  return students.map(s => `
+    <div class="student-row">
+      <span>${s['Name']}</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="color:#888;font-size:12px">${s['Class'] || ''}</span>
+        <span class="badge ${s['Gender'] === 'Boy' ? 'boy' : 'girl'}">${s['Gender']}</span>
+        <span style="font-size:12px;color:#888">${s['Shoe Size'] || ''}</span>
+      </div>
+    </div>`).join('');
+}
+
+function filterDetailStudents(q, schoolName) {
+  const students = allStudents.filter(s => s['School'] === schoolName && s['Name'].toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('student-list-detail').innerHTML = renderStudentRows(students);
+}
+
+// ── LOG MODAL ──
+function showLogModal() {
+  const sel = document.getElementById('m-school');
+  sel.innerHTML = allSchools.map(s => `<option>${s['Name']}</option>`).join('');
+  if (activeSchool !== 'all') sel.value = activeSchool;
+  document.getElementById('log-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('log-modal').classList.remove('open');
+  document.getElementById('autocomplete-list').style.display = 'none';
+}
+
+function filterStudents() {
+  const q = document.getElementById('m-student').value.toLowerCase();
+  const school = document.getElementById('m-school').value;
+  if (q.length < 2) { document.getElementById('autocomplete-list').style.display = 'none'; return; }
+  const matches = allStudents
+    .filter(s => s['School'] === school && s['Name'].toLowerCase().includes(q))
+    .slice(0, 10);
+  const list = document.getElementById('autocomplete-list');
+  if (!matches.length) { list.style.display = 'none'; return; }
+  list.innerHTML = matches.map(s =>
+    `<div class="autocomplete-item" onclick="selectStudent('${s['Name']}','${s['Shoe Size']}','${s['Uniform Size']}')">${s['Name']} <span style="color:#888;font-size:11px">${s['Class']} · ${s['Gender']}</span></div>`
+  ).join('');
+  list.style.display = 'block';
+}
+
+function selectStudent(name, shoe, uniform) {
+  document.getElementById('m-student').value = name;
+  document.getElementById('m-size').value = uniform || shoe || '';
+  document.getElementById('autocomplete-list').style.display = 'none';
+}
+
+async function submitLog() {
+  const row = {
+    School:     document.getElementById('m-school').value,
+    Student:    document.getElementById('m-student').value,
+    Item:       document.getElementById('m-item').value,
+    Direction:  document.getElementById('m-dir').value,
+    Size:       document.getElementById('m-size').value,
+    Quantity:   document.getElementById('m-qty').value,
+    Condition:  document.getElementById('m-cond').value,
+    Notes:      document.getElementById('m-notes').value,
+    'Logged By': myName || 'Dashboard',
+    Timestamp:  new Date().toISOString(),
+  };
+  try {
+    await appendRow(SHEETS.DISPATCHES, row);
+    closeModal();
+    await loadAll();
+  } catch(e) {
+    alert('Error saving: ' + e.message);
   }
 }
 
-function renderDetail(schoolName) {
-  const school = SCHOOLS.find(s => s.name === schoolName);
-  const recs = getSchoolRecords(schoolName);
-  const boys = recs.filter(r => r.fields['Gender'] === 'Boy');
-  const girls = recs.filter(r => r.fields['Gender'] === 'Girl');
-
-  const searchVal = document.getElementById('detail-search')?.value?.toLowerCase() || '';
-  const genderFilter = document.getElementById('detail-gender')?.value || '';
-
-  let filtered = recs;
-  if (searchVal) filtered = filtered.filter(r => (r.fields['Child Name']||'').toLowerCase().includes(searchVal) || (r.fields['Logged By']||'').toLowerCase().includes(searchVal));
-  if (genderFilter) filtered = filtered.filter(r => r.fields['Gender'] === genderFilter);
-
-  // Size breakdowns
-  const shoeSizes = {};
-  recs.forEach(r => { const s = r.fields['Shoe Size']; if (s && s !== 'Not receiving') shoeSizes[s] = (shoeSizes[s]||0)+1; });
-  const sweaterSizes = {};
-  recs.forEach(r => { const s = r.fields['Sweater Size']; if (s && s !== 'Not receiving') sweaterSizes[s] = (sweaterSizes[s]||0)+1; });
-
-  document.getElementById('detail-panel').innerHTML = `
-  <div class="detail-panel">
-    <div class="detail-header">
-      <div>
-        <div class="detail-title">${schoolName}</div>
-        <div class="detail-meta">${school?.leader} · ${recs.length} children logged</div>
-      </div>
-      <button class="close-btn" onclick="toggleDetail('${schoolName}')">✕ Close</button>
-    </div>
-
-    <div class="breakdown-grid">
-      <div class="breakdown-card">
-        <div class="breakdown-title">👟 Shoe sizes</div>
-        ${Object.entries(shoeSizes).sort().map(([s,c]) => `<div class="breakdown-row"><span class="breakdown-key">${s}</span><span class="breakdown-val">${c}</span></div>`).join('') || '<div style="color:var(--text-muted);font-size:13px">No data yet</div>'}
-      </div>
-      <div class="breakdown-card">
-        <div class="breakdown-title">👕 Sweater sizes</div>
-        ${Object.entries(sweaterSizes).map(([s,c]) => `<div class="breakdown-row"><span class="breakdown-key">${s}</span><span class="breakdown-val">${c}</span></div>`).join('') || '<div style="color:var(--text-muted);font-size:13px">No data yet</div>'}
-      </div>
-    </div>
-
-    <div class="filters">
-      <input class="filter-input" id="detail-search" placeholder="Search by name or logger…" value="${searchVal}" oninput="renderDetail('${schoolName}')" style="flex:1;min-width:150px" />
-      <select class="filter-select" id="detail-gender" onchange="renderDetail('${schoolName}')">
-        <option value="">All genders</option>
-        <option value="Boy" ${genderFilter==='Boy'?'selected':''}>Boys only</option>
-        <option value="Girl" ${genderFilter==='Girl'?'selected':''}>Girls only</option>
-      </select>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Child name</th>
-            <th>Gender</th>
-            <th>Age group</th>
-            <th>Shoes</th>
-            <th>Sweater</th>
-            <th>Bag</th>
-            <th>Logged by</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${filtered.length === 0 ? `<tr><td colspan="8" class="empty-state">No entries found</td></tr>` :
-            filtered.map(r => {
-              const f = r.fields;
-              const date = f['Timestamp'] ? new Date(f['Timestamp']).toLocaleDateString('en-GB', {day:'2-digit',month:'short'}) : '—';
-              return `<tr>
-                <td><strong>${f['Child Name']||'—'}</strong></td>
-                <td><span class="badge ${f['Gender']==='Boy'?'b-boy':'b-girl'}">${f['Gender']||'—'}</span></td>
-                <td>${f['Age Group']||'—'}</td>
-                <td><span class="badge b-small">${f['Shoe Size']||'—'}</span></td>
-                <td>${f['Sweater Size']||'—'}</td>
-                <td>${f['Bag']||'—'}</td>
-                <td style="color:var(--text-dim)">${f['Logged By']||'—'}</td>
-                <td style="color:var(--text-dim);font-family:'DM Mono',monospace;font-size:12px">${date}</td>
-              </tr>`;
-            }).join('')}
-        </tbody>
-      </table>
-    </div>
-  </div>`;
+// ── NAME ──
+function askName() {
+  const n = prompt('Your name (shown in log entries):');
+  if (n) { myName = n; localStorage.setItem('loggerName', n); showNameBanner(); }
+}
+function showNameBanner() {
+  if (!myName) return;
+  const b = document.getElementById('name-banner');
+  b.style.display = 'flex';
+  b.innerHTML = `Logged in as <strong>${myName}</strong> <button onclick="askName()" style="font-size:12px;background:none;border:none;color:#888;cursor:pointer;margin-left:8px">Change</button>`;
 }
 
-loadData();
-setInterval(loadData, 60000); // auto-refresh every 60 seconds
+// ── INIT ──
+showNameBanner();
+loadAll();
 </script>
 </body>
 </html>
